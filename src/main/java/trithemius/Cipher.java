@@ -14,31 +14,61 @@ public class Cipher {
         this.alphabet = alphabet;
     }
 
-    public String cipherText(String input)
+    public String cipherWord(String input, int offset)
     {
         StringBuffer sb = new StringBuffer();
 
-        for(int i = 0; i < input.length(); i++)
+        if(offset == 0) {
+            sb.append(input.charAt(0));
+        }
+        else
         {
-            char targetChar = input.charAt(i);
+            sb.append(getCharFromAlphabet(input.charAt(0), 0, offset));
+        }
 
-            if(i == 0)
+        for(int wordPos = 1; wordPos < input.length(); wordPos++)
+        {
+            char targetChar = input.charAt(wordPos);
+
+            if(targetChar == ',' || targetChar == '.')
             {
                 sb.append(targetChar);
             }
             else
             {
-                int pos = getPositionFromAlphabet(targetChar);
-
-                pos = Math.floorMod(pos - i, alphabet.length());
-
-                char resultChar = Character.isLowerCase(targetChar) ? Character.toLowerCase(alphabet.charAt(pos)) : alphabet.charAt(pos);
-
-                sb.append(resultChar);
+                sb.append(getCharFromAlphabet(targetChar, wordPos, offset));
             }
         }
 
         return sb.toString();
+    }
+
+    private char getCharFromAlphabet(char targetChar, int wordPos, int offset)
+    {
+        int pos = Math.floorMod(getPositionFromAlphabet(targetChar) - (wordPos + offset), alphabet.length());
+
+        return Character.isLowerCase(targetChar) ? Character.toLowerCase(alphabet.charAt(pos)) : alphabet.charAt(pos);
+    }
+
+    public String cipherText(String input)
+    {
+        StringBuffer sb = new StringBuffer();
+
+        int offset = 0;
+        for(String word : input.split(" "))
+        {
+            sb.append(cipherWord(word, offset));
+            sb.append(" ");
+
+            offset += word.length();
+
+            if(word.contains(",") || word.contains("."))
+            {
+                offset--;
+            }
+        }
+
+        return sb.toString().trim();
     }
 
     private int getPositionFromAlphabet(char targetChar)
